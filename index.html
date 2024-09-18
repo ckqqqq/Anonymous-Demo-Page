@@ -47,7 +47,10 @@
   <script src="static/js/bulma-carousel.min.js"></script>
   <script src="static/js/bulma-slider.min.js"></script>
   <script src="static/js/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
 </head>
+
 <body>
 <!-- body部分包含了网页的可见内容 -->
 
@@ -210,25 +213,20 @@
 
 
 
-  <!-- Youtube视频部分，没有的话直接删了吧 -->
+  <!-- Excel 文件展示部分，替换掉了原模板中的youtobe视频展示 -->
   <section class="hero is-small is-light">
     <div class="hero-body">
       <div class="container">
-        <!-- Paper video. -->
-        <h2 class="title is-3">Video Presentation</h2>
-        <div class="columns is-centered has-text-centered">
-          <div class="column is-four-fifths">
-            
-            <div class="publication-video">
-              <!-- Youtube embed code here -->
-              <iframe src="https://www.youtube.com/embed/JkaxUblCGz0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-            </div>
-          </div>
-        </div>
+        <h2 class="title is-3">人工评测统计结果展示</h2>
+        <!-- 第一个 Excel 文件 -->
+        <h3 class="subtitle">中文数据对比</h3>
+        <div id="excel-container1"></div>
+        <!-- 第二个 Excel 文件 -->
+        <h3 class="subtitle">英文数据对比</h3>
+        <div id="excel-container2"></div>
       </div>
     </div>
   </section>
-  <!-- End youtube video -->
 
 
   <!-- 视频轮播部分，没那么多视频的话也删了吧 -->
@@ -317,6 +315,43 @@
       </div>
     </div>
   </footer>
+
+  <script>
+    // 这是用GPT写的一段JavaScript加载excel文件的代码，若报错可修改，我没有测试过
+    function loadExcel(fileUrl, containerId) {
+      var oReq = new XMLHttpRequest();
+      oReq.open("GET", fileUrl, true);
+      oReq.responseType = "arraybuffer";
+  
+      oReq.onload = function(e) {
+        var arraybuffer = oReq.response;
+  
+        /* 将数据转换为 Uint8Array */
+        var data = new Uint8Array(arraybuffer);
+        var arr = new Array();
+        for(var i = 0; i != data.length; ++i) arr[i] = String.fromCharCode(data[i]);
+        var bstr = arr.join("");
+  
+        /* 读取工作簿 */
+        var workbook = XLSX.read(bstr, {type:"binary"});
+  
+        /* 假设您要展示第一个工作表 */
+        var first_sheet_name = workbook.SheetNames[0];
+        var worksheet = workbook.Sheets[first_sheet_name];
+  
+        /* 将工作表转换为 HTML */
+        var htmlstr = XLSX.utils.sheet_to_html(worksheet);
+  
+        /* 将 HTML 插入到指定容器中 */
+        document.getElementById(containerId).innerHTML = htmlstr;
+      }
+      oReq.send();
+    }
+    // 加载第一个 Excel 文件
+    loadExcel('static/files/your_excel_file1.xlsx', 'excel-container1');
+    // 加载第二个 Excel 文件
+    loadExcel('static/files/your_excel_file2.xlsx', 'excel-container2');
+  </script>
 
 </body>
 </html>
